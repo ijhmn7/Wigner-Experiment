@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wigner & Friend — Entangled Pair</title>
+<style>
+/* no external fonts - fully self contained */
+
+:root {
+  --bg:       #050810;
+  --panel:    #0b0f1a;
+  --border:   #151e30;
+  --wigner:   #f0b429;
+  --friend:   #00c9a7;
+  --up:       #4ade80;
+  --down:     #f87171;
+  --instant:  #a78bfa;
+  --text:     #c8d8f0;
+  --dim:      #334566;
+  --earth:    #3b82f6;
+  --mars:     #ef4444;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Courier New', Courier, monospace;
+  min-height: 100vh;
+  padding: 2rem 1rem 4rem;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* space bg */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 15% 50%, rgba(59,130,246,0.05) 0%, transparent 60%),
+    radial-gradient(ellipse 80% 50% at 85% 50%, rgba(239,68,68,0.05) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.wrap { max-width: 1000px; margin: 0 auto; position: relative; z-index: 1; }
+
+/* HEADER */
+h1 {
+  font-family: 'Arial Black', Impact, sans-serif;
+  font-size: clamp(2rem, 6vw, 3.8rem);
+  letter-spacing: 0.1em;
+  line-height: 1;
+  margin-bottom: 0.2rem;
+  color: #fff;
+}
+
+h1 .earth { color: var(--wigner); }
+h1 .mars  { color: var(--friend); }
+
+.sub {
+  font-size: 0.65rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 2rem;
+}
+
+/* LOCATION CARDS */
+.locations {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.loc-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.2rem;
+}
+
+.loc-card.earth-card { border-top: 2px solid var(--wigner); }
+.loc-card.mars-card  { border-top: 2px solid var(--friend); }
+
+.loc-card .planet {
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin-bottom: 0.3rem;
+}
+
+.earth-card .planet { color: var(--wigner); }
+.mars-card  .planet { color: var(--friend); }
+
+.loc-card .name {
+  font-family: 'Arial Black', Impact, sans-serif;
+  font-size: 1.4rem;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.3rem;
+}
+
+.earth-card .name { color: var(--wigner); }
+.mars-card  .name { color: var(--friend); }
+
+.loc-card .desc {
+  font-family: Arial, sans-serif;
+  font-size: 0.7rem;
+  color: var(--dim);
+  line-height: 1.5;
+}
+
+.entangle-bridge {
+  text-align: center;
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--instant);
+  line-height: 2;
+}
+
+.entangle-bridge .line {
+  width: 1px;
+  height: 30px;
+  background: linear-gradient(to bottom, var(--wigner), var(--instant), var(--friend));
+  margin: 0 auto;
+}
+
+.entangle-bridge .label {
+  background: rgba(167,139,250,0.1);
+  border: 1px solid rgba(167,139,250,0.25);
+  border-radius: 4px;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.55rem;
+}
+
+/* STATS */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+}
+
+.sbox {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.6rem 0.8rem;
+  text-align: center;
+}
+
+.sbox .v {
+  font-family: 'Arial Black', Impact, sans-serif;
+  font-size: 1.6rem;
+  letter-spacing: 0.05em;
+  line-height: 1;
+}
+
+.sbox .l {
+  font-size: 0.52rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-top: 0.15rem;
+}
+
+/* KEY INSIGHT */
+.insight {
+  background: var(--panel);
+  border: 1px solid rgba(167,139,250,0.2);
+  border-left: 3px solid var(--instant);
+  border-radius: 6px;
+  padding: 0.9rem 1.1rem;
+  margin-bottom: 1.5rem;
+  font-family: Arial, sans-serif;
+  font-size: 0.78rem;
+  color: var(--text);
+  line-height: 1.7;
+  display: none;
+}
+
+.insight strong { color: var(--instant); }
+.insight .w { color: var(--wigner); font-weight: 600; }
+.insight .f { color: var(--friend);  font-weight: 600; }
+
+/* CONTROLS */
+.controls {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+button {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.6rem 1.4rem;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid;
+  transition: all 0.18s;
+}
+
+.btn-run {
+  background: var(--wigner);
+  color: #000;
+  border-color: var(--wigner);
+  box-shadow: 0 0 16px rgba(240,180,41,0.3);
+}
+.btn-run:hover { box-shadow: 0 0 28px rgba(240,180,41,0.55); }
+
+.btn-flip {
+  background: transparent;
+  color: var(--friend);
+  border-color: var(--friend);
+}
+.btn-flip:hover { background: rgba(0,201,167,0.08); }
+
+.btn-reset {
+  background: transparent;
+  color: var(--dim);
+  border-color: var(--border);
+}
+.btn-reset:hover { color: var(--text); border-color: var(--dim); }
+
+.first-label {
+  font-size: 0.62rem;
+  color: var(--dim);
+  letter-spacing: 0.06em;
+}
+
+/* TABLE */
+.tbl-wrap {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.72rem;
+}
+
+thead tr { background: #080c16; }
+
+thead th {
+  padding: 0.7rem 0.9rem;
+  text-align: center;
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+th.th-n       { color: var(--dim); }
+th.th-wigner  { color: var(--wigner); border-bottom: 2px solid var(--wigner); }
+th.th-friend  { color: var(--friend); border-bottom: 2px solid var(--friend); }
+th.th-instant { color: var(--instant); }
+
+tbody tr { border-bottom: 1px solid rgba(21,30,48,0.9); transition: background 0.1s; }
+tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+td { padding: 0.4rem 0.9rem; text-align: center; }
+
+td.td-n { color: var(--dim); font-size: 0.62rem; }
+
+.spin {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.65rem;
+  border-radius: 3px;
+  min-width: 72px;
+  letter-spacing: 0.04em;
+}
+
+.spin-up   { background: rgba(74,222,128,0.12);  color: var(--up);   border: 1px solid rgba(74,222,128,0.3); }
+.spin-down { background: rgba(248,113,113,0.12); color: var(--down); border: 1px solid rgba(248,113,113,0.3); }
+
+.tag {
+  display: block;
+  font-size: 0.52rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: 3px;
+}
+
+.tag-random  { color: var(--wigner); }
+.tag-instant { color: var(--instant); }
+.tag-random-f { color: var(--friend); }
+.tag-instant-w { color: var(--instant); }
+
+.instant-badge {
+  font-size: 0.6rem;
+  color: var(--instant);
+  letter-spacing: 0.06em;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: var(--dim);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+}
+
+/* footnote */
+.footnote {
+  margin-top: 2rem;
+  padding: 1rem 1.2rem;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: Arial, sans-serif;
+  font-size: 0.7rem;
+  color: var(--dim);
+  line-height: 1.8;
+}
+
+.footnote strong { color: var(--text); }
+.footnote .w { color: var(--wigner); }
+.footnote .f { color: var(--friend); }
+.footnote .i { color: var(--instant); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1><span class="earth">Wigner</span> · <span class="mars">Friend</span></h1>
+  <p class="sub">One entangled pair per trial · 100 trials · whoever opens first gets random · second always gets opposite</p>
+
+  <div class="locations">
+    <div class="loc-card earth-card">
+      <div class="planet">🌍 Earth</div>
+      <div class="name">Wigner</div>
+      <div class="desc">Holds particle A. Opens his box. Gets a genuinely random result — ↑ or ↓. No force in physics can predict which.</div>
+    </div>
+    <div class="entangle-bridge">
+      <div class="line"></div>
+      <div class="label">⟨ entangled ⟩</div>
+      <div class="line"></div>
+    </div>
+    <div class="loc-card mars-card">
+      <div class="planet">🔴 Mars</div>
+      <div class="name">Friend</div>
+      <div class="desc">Holds particle B. The moment Wigner measures, she instantly knows his result — before she even opens her box.</div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="sbox"><div class="v" id="s-total" style="color:var(--text)">—</div><div class="l">Trials</div></div>
+    <div class="sbox"><div class="v" id="s-w-up" style="color:var(--up)">—</div><div class="l">Wigner ↑</div></div>
+    <div class="sbox"><div class="v" id="s-w-down" style="color:var(--down)">—</div><div class="l">Wigner ↓</div></div>
+    <div class="sbox"><div class="v" id="s-f-up" style="color:var(--up)">—</div><div class="l">Friend ↑</div></div>
+    <div class="sbox"><div class="v" id="s-f-down" style="color:var(--down)">—</div><div class="l">Friend ↓</div></div>
+    <div class="sbox"><div class="v" id="s-w-pct" style="color:var(--wigner)">—</div><div class="l">Wigner ↑%</div></div>
+    <div class="sbox"><div class="v" id="s-f-pct" style="color:var(--friend)">—</div><div class="l">Friend ↑%</div></div>
+    <div class="sbox"><div class="v" id="s-corr" style="color:var(--instant)">—</div><div class="l">Opposite %</div></div>
+  </div>
+
+  <div class="insight" id="insight"></div>
+
+  <div class="controls">
+    <button class="btn-run"   id="btn-run"  onclick="run()">▶ Run 100 Trials</button>
+    <button class="btn-flip"  id="btn-flip" onclick="flipFirst()">⇄ Friend Opens First</button>
+    <button class="btn-reset" onclick="reset()">✕ Clear</button>
+    <span class="first-label" id="first-label">Wigner opens first</span>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th class="th-n">#</th>
+          <th class="th-wigner">Wigner — Earth<br><span style="font-size:0.5rem;opacity:0.6">particle A</span></th>
+          <th class="th-friend">Friend — Mars<br><span style="font-size:0.5rem;opacity:0.6">particle B</span></th>
+          <th class="th-instant">Instant Knowledge</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <tr><td colspan="4" class="empty-state">Press "Run 100 Trials" to simulate</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="footnote">
+    <strong>What this table proves:</strong><br>
+    <span class="w">Wigner's</span> column is pure random — ~50% ↑, ~50% ↓. Unpredictable. No equation can tell you what trial 47 will be.<br>
+    <span class="f">Friend's</span> column is never random — it is always the exact opposite of Wigner. Determined the instant he measures.<br>
+    Flip who opens first — the <strong>50/50 stays identical</strong>. The opposition never breaks.<br>
+    <span class="i">The correlation is 100%. But Friend on Mars cannot use it to receive a message from Wigner on Earth.</span> Her results still look like random 50/50 until they compare lists. The universe allows instant knowledge. It forbids instant communication.
+  </div>
+
+</div>
+
+<script>
+let wignerFirst = true;
+
+function flipFirst() {
+  wignerFirst = !wignerFirst;
+  const btn = document.getElementById('btn-flip');
+  const lbl = document.getElementById('first-label');
+  if (wignerFirst) {
+    btn.textContent = '⇄ Friend Opens First';
+    btn.style.color = 'var(--friend)';
+    btn.style.borderColor = 'var(--friend)';
+    lbl.textContent = 'Wigner opens first';
+  } else {
+    btn.textContent = '⇄ Wigner Opens First';
+    btn.style.color = 'var(--wigner)';
+    btn.style.borderColor = 'var(--wigner)';
+    lbl.textContent = 'Friend opens first';
+  }
+  // re-run if data exists
+  if (document.getElementById('s-total').textContent !== '—') run();
+}
+
+function run() {
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = '';
+
+  let wUp=0, wDown=0, fUp=0, fDown=0;
+
+  for (let i = 1; i <= 100; i++) {
+    // whoever opens first gets the random result
+    // second always gets opposite
+    const firstResult = Math.random() < 0.5 ? 'UP' : 'DOWN';
+    const secondResult = firstResult === 'UP' ? 'DOWN' : 'UP';
+
+    const wignerResult = wignerFirst ? firstResult  : secondResult;
+    const friendResult = wignerFirst ? secondResult : firstResult;
+
+    const wignerTag  = wignerFirst ? 'random'  : 'instant';
+    const friendTag  = wignerFirst ? 'instant' : 'random';
+
+    if (wignerResult === 'UP') wUp++; else wDown++;
+    if (friendResult === 'UP') fUp++; else fDown++;
+
+    const wignerTagHtml = wignerTag === 'random'
+      ? '<span class="tag tag-random">⚄ random</span>'
+      : '<span class="tag tag-instant-w">⚡ instant</span>';
+
+    const friendTagHtml = friendTag === 'random'
+      ? '<span class="tag tag-random-f">⚄ random</span>'
+      : '<span class="tag tag-instant">⚡ instant</span>';
+
+    const instantText = wignerFirst
+      ? `Friend on Mars knows Wigner got ${wignerResult === 'UP' ? '↑' : '↓'} — before she opens`
+      : `Wigner on Earth knows Friend got ${friendResult === 'UP' ? '↑' : '↓'} — before he opens`;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="td-n">${String(i).padStart(3,'0')}</td>
+      <td>
+        <span class="spin spin-${wignerResult.toLowerCase()}">${wignerResult === 'UP' ? '↑ UP' : '↓ DOWN'}</span>
+        ${wignerTagHtml}
+      </td>
+      <td>
+        <span class="spin spin-${friendResult.toLowerCase()}">${friendResult === 'UP' ? '↑ UP' : '↓ DOWN'}</span>
+        ${friendTagHtml}
+      </td>
+      <td class="instant-badge">${instantText}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  const total = 100;
+  const wPct  = Math.round(wUp/50*100)/2;
+  const fPct  = Math.round(fUp/50*100)/2;
+
+  document.getElementById('s-total').textContent  = total;
+  document.getElementById('s-w-up').textContent   = wUp;
+  document.getElementById('s-w-down').textContent = wDown;
+  document.getElementById('s-f-up').textContent   = fUp;
+  document.getElementById('s-f-down').textContent = fDown;
+  document.getElementById('s-w-pct').textContent  = wUp + '%';
+  document.getElementById('s-f-pct').textContent  = fUp + '%';
+  document.getElementById('s-corr').textContent   = '100%';
+
+  const who1 = wignerFirst ? 'Wigner' : 'Friend';
+  const who2 = wignerFirst ? 'Friend' : 'Wigner';
+  const col1 = wignerFirst ? 'var(--wigner)' : 'var(--friend)';
+  const col2 = wignerFirst ? 'var(--friend)' : 'var(--wigner)';
+
+  const insight = document.getElementById('insight');
+  insight.innerHTML = `
+    <strong style="color:var(--instant)">What just happened across 100 trials:</strong><br>
+    <span style="color:${col1}">${who1}</span> opened first — got ${wignerFirst ? wUp : fUp} ↑ and ${wignerFirst ? wDown : fDown} ↓. Completely random. ~50/50.<br>
+    <span style="color:${col2}">${who2}</span> opened second — always got the exact opposite. Every single time. 100 out of 100.<br>
+    Now press <strong>⇄ flip</strong> to let ${who2} open first — the 50/50 stays identical. The opposition never breaks. <strong style="color:var(--instant)">The particle does not care who goes first.</strong>
+  `;
+  insight.style.display = 'block';
+}
+
+function reset() {
+  document.getElementById('tbody').innerHTML =
+    '<tr><td colspan="4" class="empty-state">Press "Run 100 Trials" to simulate</td></tr>';
+  document.getElementById('insight').style.display = 'none';
+  ['s-total','s-w-up','s-w-down','s-f-up','s-f-down','s-w-pct','s-f-pct','s-corr']
+    .forEach(id => document.getElementById(id).textContent = '—');
+}
+
+run();
+</script>
+</body>
+</html>
