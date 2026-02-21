@@ -355,7 +355,7 @@ td.td-n { color: var(--dim); font-size: 0.62rem; }
     <div class="loc-card mars-card">
       <div class="planet">🔴 Mars</div>
       <div class="name">Friend</div>
-      <div class="desc">Holds particle B. The moment Wigner measures, she instantly knows his result — before she even opens her box.</div>
+      <div class="desc">Holds particle B. The moment Wigner measures, she learns his result the moment she opens her box.</div>
     </div>
   </div>
 
@@ -457,8 +457,8 @@ function run() {
       : '<span class="tag tag-instant">⚡ instant</span>';
 
     const instantText = wignerFirst
-      ? `Friend on Mars knows Wigner got ${wignerResult === 'UP' ? '↑' : '↓'} — before she opens`
-      : `Wigner on Earth knows Friend got ${friendResult === 'UP' ? '↑' : '↓'} — before he opens`;
+      ? `Friend on Mars opens her box → gets ${friendResult === 'UP' ? '↑' : '↓'} → now knows Wigner got ${wignerResult === 'UP' ? '↑' : '↓'}`
+      : `Wigner on Earth opens his box → gets ${wignerResult === 'UP' ? '↑' : '↓'} → now knows Friend got ${friendResult === 'UP' ? '↑' : '↓'}`;
 
     const tr = document.createElement('tr');
     tr.innerHTML = `
